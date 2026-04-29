@@ -1,70 +1,166 @@
-# Getting Started with Create React App
+# 🥗 Food Product Explorer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A premium food product discovery application built with React.js, featuring a "Fresh Organic Modernism" design philosophy.
 
-## Available Scripts
+## Design Philosophy
 
-In the project directory, you can run:
+**Fresh Organic Modernism**
+- Background: `#F8FAF9` (Soft mint white)
+- Primary: `#10B981` (Emerald green)
+- Text: `#1F2937` (Dark gray)
+- Pure white cards with soft shadows
+- Large rounded corners (24px)
+- Generous white space
+- Smooth Framer Motion animations
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### ✨ Core Functionality
+- **Smart Search**: Debounced text search with instant results
+- **Barcode Scanner**: Direct product lookup by barcode
+- **Category Filters**: Browse by food categories from Open Food Facts
+- **Sort Options**: Sort by relevance, name (A-Z), or Nutri-Score (A-E)
+- **Infinite Scroll**: Seamless loading of 20 products at a time
+- **Responsive Design**: Mobile-first approach with adaptive layouts
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🎨 UI Components
+- **ProductCard**: Clean white cards with hover effects
+- **SearchBar**: Dual-mode search (text/barcode)
+- **CategoryFilter**: Animated filter chips
+- **NutriScoreBadge**: Color-coded nutritional grades
+- **ProductDetail**: Modal with comprehensive product information
+- **Loading Skeletons**: Smooth loading states
 
-### `npm test`
+### 🔧 Technical Architecture
+- **Data Layer**: `src/utils/api.js` - OpenFoodFacts API integration
+- **State Management**: `src/hooks/useFood.js` - Custom hook for data management
+- **Animations**: Framer Motion for smooth transitions
+- **Styling**: Tailwind CSS with custom theme
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Installation
 
-### `npm run build`
+```bash
+# Navigate to project directory
+cd food-product-explorer
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# Install dependencies
+npm install
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+# Start development server
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The app will open at [http://localhost:3000](http://localhost:3000)
 
-### `npm run eject`
+## Project Structure
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+food-product-explorer/
+├── src/
+│   ├── components/
+│   │   ├── CategoryFilter.js      # Category filter chips
+│   │   ├── NutriScoreBadge.js     # Nutri-Score display
+│   │   ├── ProductCard.js         # Product card component
+│   │   ├── ProductDetail.js       # Product detail modal
+│   │   ├── ProductGrid.js         # Grid with infinite scroll
+│   │   ├── SearchBar.js           # Dual-mode search
+│   │   └── SortControl.js         # Sort dropdown
+│   ├── hooks/
+│   │   └── useFood.js             # Custom data management hook
+│   ├── utils/
+│   │   └── api.js                 # OpenFoodFacts API layer
+│   ├── App.js                     # Main application
+│   ├── index.css                  # Tailwind imports
+│   └── index.js                   # React entry point
+├── tailwind.config.js             # Custom theme configuration
+└── package.json
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## API Integration
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The app uses the [Open Food Facts API](https://world.openfoodfacts.org) with proper User-Agent headers as required by their documentation.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Key API Functions
 
-## Learn More
+- `fetchProducts(page, pageSize, searchTerm, category)` - Get paginated products
+- `fetchProductByBarcode(barcode)` - Get specific product by barcode
+- `fetchCategories()` - Get available food categories
+- `getNutriScoreColor(grade)` - Get color for Nutri-Score badge
+- `getProductImageUrl(product)` - Get product image with fallback
+- `getProductName(product)` - Get product name with fallback
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Usage
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Search Products
+1. Type in the search bar for text-based search (debounced)
+2. Click "Barcode" button to switch to barcode mode
+3. Enter barcode and click "Search"
 
-### Code Splitting
+### Filter & Sort
+1. Click category chips to filter by category
+2. Use the sort dropdown to change sort order
+3. Click "Reset Filters" to clear all filters
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### View Details
+1. Click any product card to view detailed information
+2. See nutrition facts, ingredients, labels, and more
+3. Click outside or the X button to close
 
-### Analyzing the Bundle Size
+### Infinite Scroll
+- Scroll down to automatically load more products
+- Loading skeletons appear while fetching
+- "End of list" message when all products are loaded
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Customization
 
-### Making a Progressive Web App
+### Colors
+Edit `tailwind.config.js` to customize the color scheme:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```javascript
+colors: {
+  background: '#F8FAF9',
+  primary: '#10B981',
+  // Add your custom colors
+}
+```
 
-### Advanced Configuration
+### API Configuration
+Edit `src/utils/api.js` to modify API settings:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```javascript
+const BASE_URL = 'https://world.openfoodfacts.org';
+const USER_AGENT = 'FoodProductExplorer/1.0 (your@email.com)';
+```
 
-### Deployment
+## Technologies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- **React 18** - UI library
+- **Framer Motion** - Animation library
+- **Axios** - HTTP client
+- **Tailwind CSS** - Utility-first CSS framework
+- **Open Food Facts API** - Product data source
 
-### `npm run build` fails to minify
+## Performance Optimizations
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Debounced search (500ms delay)
+- Intersection Observer for infinite scroll
+- Image lazy loading with error fallbacks
+- Memoized callbacks in custom hooks
+- Staggered animations for smooth entry
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## License
+
+MIT
+
+## Credits
+
+- Data provided by [Open Food Facts](https://world.openfoodfacts.org)
+- Design: Fresh Organic Modernism
+- Built with ❤️ using React

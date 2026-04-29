@@ -118,8 +118,10 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
             fields: 'code,product_name,brands,image_url,image_front_url,image_front_small_url,nutrition_grades,quantity,categories,nutriments,ingredients_text,labels',
         };
 
-        if (searchTerm) {
-            params.search_terms = searchTerm;
+        if (searchTerm && searchTerm.trim()) {
+            const cleanSearchTerm = searchTerm.trim();
+            console.log('🔍 Searching for:', cleanSearchTerm);
+            params.search_terms = cleanSearchTerm;
         }
 
         if (category) {
@@ -128,12 +130,18 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
             params.tag_0 = category;
         }
 
-        console.log('🌐 Fetching products from OpenFoodFacts API...');
+        console.log('🌐 Fetching products from OpenFoodFacts API with params:', params);
 
         // Try direct API call first
         const response = await api.get('/cgi/search.pl', {
             params,
             signal: abortController?.signal
+        });
+
+        console.log('📊 API Response:', {
+            count: response.data.count,
+            products: response.data.products?.length,
+            page: response.data.page
         });
 
         const result = {
@@ -168,11 +176,30 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
         // Enhanced fallback to mock data with pagination simulation
         let filteredProducts = [...mockProducts];
 
-        if (searchTerm) {
-            filteredProducts = filteredProducts.filter(p =>
-                p.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.brands.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+        if (searchTerm && searchTerm.trim()) {
+            const searchLower = searchTerm.toLowerCase().trim();
+            console.log('🔍 Filtering mock data for:', searchLower);
+            console.log('📊 Available products:', mockProducts.map(p => p.product_name));
+
+            filteredProducts = filteredProducts.filter(p => {
+                const productName = (p.product_name || '').toLowerCase();
+                const brands = (p.brands || '').toLowerCase();
+                const categories = (p.categories || '').toLowerCase();
+
+                const matches = productName.includes(searchLower) ||
+                    brands.includes(searchLower) ||
+                    categories.includes(searchLower);
+
+                if (matches) {
+                    console.log('✅ Match found:', p.product_name, 'for search:', searchLower);
+                }
+
+                return matches;
+            });
+
+            console.log('📊 Mock data filtered results:', filteredProducts.length, 'out of', mockProducts.length);
+        } else {
+            console.log('📊 No search term, showing all mock products:', filteredProducts.length);
         }
 
         if (category) {

@@ -19,6 +19,11 @@ export const useFood = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [sortBy, setSortBy] = useState('relevance');
 
+    // Debug searchQuery changes
+    useEffect(() => {
+        console.log('🔍 searchQuery changed to:', searchQuery);
+    }, [searchQuery]);
+
     // Pagination state
     const [page, setPage] = useState(1);
 
@@ -47,6 +52,7 @@ export const useFood = () => {
      * Load products with current filters
      */
     const loadProducts = useCallback(async (pageNum = 1, append = false) => {
+        console.log('🔄 loadProducts called with:', { pageNum, append, searchQuery, selectedCategory });
         setLoading(true);
         setError(null);
         setIsBarcodeResult(false);
@@ -59,12 +65,18 @@ export const useFood = () => {
                 selectedCategory
             );
 
+            console.log('📊 fetchProducts returned:', data);
+
             // Apply client-side sorting
             let sortedProducts = sortProducts(data.products, sortBy);
 
             if (append) {
-                setProducts(prev => [...prev, ...sortedProducts]);
+                setProducts(prev => {
+                    console.log('📝 Appending products:', prev.length, '+', sortedProducts.length);
+                    return [...prev, ...sortedProducts];
+                });
             } else {
+                console.log('📝 Setting products:', sortedProducts.length);
                 setProducts(sortedProducts);
             }
 
@@ -91,17 +103,29 @@ export const useFood = () => {
     }, [loadProducts]);
 
     /**
-     * Debounced search handler (800ms to prevent rate limiting)
+     * Debounced search handler (immediate for better UX)
      */
     const handleSearch = useCallback((query) => {
+        console.log('🔍 handleSearch called with:', query);
+
         if (debounceTimer.current) {
             clearTimeout(debounceTimer.current);
         }
 
-        debounceTimer.current = setTimeout(() => {
-            setSearchQuery(query);
+        // Immediate update for empty search
+        if (!query || query.trim() === '') {
+            console.log('🔍 Empty search - resetting');
+            setSearchQuery('');
             setPage(1);
-        }, 800);
+            return;
+        }
+
+        // Debounced update for non-empty search
+        debounceTimer.current = setTimeout(() => {
+            console.log('🔍 Search triggered for:', query);
+            setSearchQuery(query.trim());
+            setPage(1);
+        }, 300);
     }, []);
 
     /**

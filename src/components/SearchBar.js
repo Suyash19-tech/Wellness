@@ -14,6 +14,7 @@ const SearchBar = ({ onSearch, onBarcodeSearch }) => {
     const handleInputChange = (e) => {
         const value = e.target.value;
         setInputValue(value);
+        console.log('🔍 SearchBar input changed to:', value);
 
         // Clear previous barcode timer
         if (barcodeTimerRef.current) {
@@ -22,6 +23,7 @@ const SearchBar = ({ onSearch, onBarcodeSearch }) => {
 
         // Check if it's a barcode
         if (isBarcode(value)) {
+            console.log('📱 Barcode detected:', value);
             // Auto-trigger barcode search after brief delay or if 13 digits
             if (value.length === 13) {
                 // Immediately search for 13-digit barcodes
@@ -33,7 +35,8 @@ const SearchBar = ({ onSearch, onBarcodeSearch }) => {
                 }, 800);
             }
         } else {
-            // Regular text search
+            console.log('🔍 Text search triggered for:', value);
+            // Regular text search - always trigger even for empty strings
             onSearch(value);
         }
     };

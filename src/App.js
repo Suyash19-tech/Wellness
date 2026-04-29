@@ -219,12 +219,22 @@ function App() {
             <p className="text-sm text-gray-500 font-medium">
               {products.length} {products.length === 1 ? 'product' : 'products'} loaded
               {totalCount && totalCount > products.length && ` • ${totalCount} total available`}
+              {searchQuery && ` • Searching for: "${searchQuery}"`}
             </p>
             {hasMore && (
               <p className="text-xs text-gray-400">
                 Scroll down or click "Load More" for more products
               </p>
             )}
+          </div>
+        )}
+
+        {/* No Results Message */}
+        {!loading && products.length === 0 && searchQuery && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-500">
+              No products found for "{searchQuery}". Try a different search term.
+            </p>
           </div>
         )}
 

@@ -300,7 +300,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 *Made by Suyash Rawat - Passionate about creating exceptional user experiences through modern web technologies*
 
-- 🌐 **Portfolio**: [suyashrawat.com](https://suyashrawat.com)
+
 - 💼 **LinkedIn**: [linkedin.com/in/suyash-rawat-a41b27287](https://www.linkedin.com/in/suyash-rawat-a41b27287)
 - 📧 **GitHub**: [github.com/Suyash19-tech](https://github.com/Suyash19-tech)
 

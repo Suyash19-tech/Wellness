@@ -11,6 +11,8 @@ export const useFood = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [hasMore, setHasMore] = useState(true);
+    const [totalPages, setTotalPages] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
 
     // Search and filter state
     const [searchQuery, setSearchQuery] = useState('');
@@ -60,13 +62,10 @@ export const useFood = () => {
             // Apply client-side sorting
             let sortedProducts = sortProducts(data.products, sortBy);
 
-            if (append) {
-                setProducts(prev => [...prev, ...sortedProducts]);
-            } else {
-                setProducts(sortedProducts);
-            }
-
+            setProducts(sortedProducts);
             setPage(pageNum);
+            setTotalPages(data.totalPages);
+            setTotalCount(data.count);
             setHasMore(pageNum < data.totalPages && data.products.length > 0);
         } catch (err) {
             // Don't show error for cancelled requests (user is still typing)
@@ -126,13 +125,24 @@ export const useFood = () => {
     }, []);
 
     /**
-     * Load more products (infinite scroll)
+     * Load more products (traditional pagination)
      */
-    const loadMore = useCallback(() => {
-        if (!loading && hasMore && !isBarcodeResult) {
-            loadProducts(page + 1, true);
+    const loadMore = useCallback((newPage) => {
+        if (!loading && !isBarcodeResult) {
+            loadProducts(newPage, false);
         }
-    }, [loading, hasMore, page, loadProducts, isBarcodeResult]);
+    }, [loading, loadProducts, isBarcodeResult]);
+
+    /**
+     * Go to specific page
+     */
+    const goToPage = useCallback((pageNum) => {
+        if (!loading && pageNum !== page && !isBarcodeResult) {
+            loadProducts(pageNum, false);
+            // Scroll to top when changing pages
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [loading, page, loadProducts, isBarcodeResult]);
 
     /**
      * Change category filter
@@ -172,6 +182,11 @@ export const useFood = () => {
         error,
         hasMore,
 
+        // Pagination
+        page,
+        totalPages,
+        totalCount,
+
         // Current filters
         searchQuery,
         selectedCategory,
@@ -183,6 +198,7 @@ export const useFood = () => {
         handleCategoryChange,
         handleSortChange,
         loadMore,
+        goToPage,
         resetFilters,
     };
 };

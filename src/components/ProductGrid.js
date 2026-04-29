@@ -1,36 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from './ProductCard';
+import Pagination from './Pagination';
 
 /**
- * ProductGrid Component - With High-End Skeleton Loaders
+ * ProductGrid Component - With Traditional Pagination
  */
-const ProductGrid = ({ products, loading, hasMore, onLoadMore, onProductClick }) => {
-    const observerTarget = useRef(null);
-
-    // Infinite scroll observer
-    useEffect(() => {
-        const currentTarget = observerTarget.current;
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasMore && !loading) {
-                    onLoadMore();
-                }
-            },
-            { threshold: 0.1 }
-        );
-
-        if (currentTarget) {
-            observer.observe(currentTarget);
-        }
-
-        return () => {
-            if (currentTarget) {
-                observer.unobserve(currentTarget);
-            }
-        };
-    }, [hasMore, loading, onLoadMore]);
-
+const ProductGrid = ({ products, loading, totalPages, currentPage, onPageChange, onProductClick }) => {
     // Empty state
     if (products.length === 0 && !loading) {
         return (
@@ -103,7 +79,7 @@ const ProductGrid = ({ products, loading, hasMore, onLoadMore, onProductClick })
                 </motion.div>
             </AnimatePresence>
 
-            {/* High-End Skeleton Loader - At least 6 cards */}
+            {/* High-End Skeleton Loader - At least 8 cards */}
             {loading && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-4">
                     {[...Array(8)].map((_, i) => (
@@ -112,10 +88,10 @@ const ProductGrid = ({ products, loading, hasMore, onLoadMore, onProductClick })
                             className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden"
                         >
                             {/* Image Skeleton with Shimmer */}
-                            <div className="h-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer bg-[length:200%_100%]"></div>
+                            <div className="h-40 sm:h-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer bg-[length:200%_100%]"></div>
 
                             {/* Content Skeleton */}
-                            <div className="p-4 space-y-3">
+                            <div className="p-3 sm:p-4 space-y-3">
                                 {/* Brand */}
                                 <div className="h-3 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-shimmer bg-[length:200%_100%] rounded w-1/3"></div>
 
@@ -136,18 +112,14 @@ const ProductGrid = ({ products, loading, hasMore, onLoadMore, onProductClick })
                 </div>
             )}
 
-            {/* Infinite Scroll Trigger */}
-            <div ref={observerTarget} className="h-10 mt-4"></div>
-
-            {/* End Message */}
-            {!hasMore && products.length > 1 && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-8 text-gray-400 text-sm font-medium"
-                >
-                    You've reached the end
-                </motion.div>
+            {/* Traditional Pagination */}
+            {!loading && products.length > 0 && totalPages > 1 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={onPageChange}
+                    loading={loading}
+                />
             )}
         </div>
     );

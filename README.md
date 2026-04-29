@@ -267,16 +267,6 @@ REACT_APP_USER_AGENT=WellnessMarket/1.0 (your@email.com)
 
 ---
 
-## 🎯 Performance Metrics
-
-- **First Contentful Paint**: < 1.5s
-- **Largest Contentful Paint**: < 2.5s
-- **Cumulative Layout Shift**: < 0.1
-- **Time to Interactive**: < 3.5s
-
-*Metrics measured on 3G network with mobile device simulation*
-
----
 
 ## 🔮 Future Enhancements
 

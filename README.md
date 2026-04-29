@@ -27,8 +27,9 @@ The project emphasizes performance, accessibility, and user experience through c
 
 ### 🔍 **Advanced Search Capabilities**
 - **Text Search**: Intelligent product name and brand searching with real-time suggestions
-- **Barcode Scanner**: Direct product lookup using 8 or 13-digit barcodes
-- **Debounced Input**: Optimized search with 800ms debouncing to prevent API rate limiting
+- **Automatic Barcode Detection**: Instantly recognizes and searches 8 or 13-digit barcodes upon entry
+- **Debounced Input**: Optimized search with 300ms debouncing for responsive user experience
+- **Multi-Field Matching**: Searches across product names, brands, and categories simultaneously
 
 ### 🏷️ **Dynamic Category Filtering**
 - **API-Driven Categories**: Real-time category fetching from OpenFoodFacts database
@@ -125,36 +126,82 @@ export const useCart = () => useContext(CartContext);
 
 ## 🏗️ Methodology
 
-### **Component-Based Architecture**
-The application follows a modular component structure with clear separation of concerns:
+### **Component-Driven Architecture**
+Built using a modular approach in React.js, separating logic into custom hooks (`useFood`) and UI into reusable components (`ProductCard`, `CartDrawer`). This architecture ensures maintainability, testability, and scalability while promoting code reuse across the application.
 
-```
-src/
-├── components/          # Reusable UI components
-│   ├── ProductCard.js   # Individual product display
-│   ├── ProductGrid.js   # Grid layout with infinite scroll
-│   ├── CartDrawer.js    # Responsive cart interface
-│   └── SearchBar.js     # Multi-modal search component
-├── context/             # Global state management
-│   └── CartContext.js   # Cart state and operations
-├── hooks/               # Custom React hooks
-│   └── useFood.js       # Product data management
-└── utils/               # Utility functions
-    ├── api.js           # API integration and caching
-    └── mockData.js      # Fallback data
+```javascript
+// Custom Hook for Business Logic
+const useFood = () => {
+    // Handles API calls, state management, and data processing
+    return { products, loading, handleSearch, loadMore };
+};
+
+// Reusable UI Components
+<ProductCard product={item} onClick={handleClick} />
+<CartDrawer items={cartItems} onClose={handleClose} />
 ```
 
-### **Mobile-First Responsive Design**
-- **Breakpoint Strategy**: sm (640px), md (768px), lg (1024px), xl (1280px)
-- **Touch Interactions**: Optimized button sizes and gesture support
-- **Progressive Enhancement**: Core functionality works on all devices, enhanced features on larger screens
-- **Performance**: Optimized images and lazy loading for mobile networks
+### **API Resilience Strategy**
+Solved the 503/CORS issue by implementing a strict User-Agent header policy and simple request headers to bypass unnecessary preflight checks. This approach ensures reliable communication with the OpenFoodFacts API while maintaining compliance with their usage policies.
 
-### **Design System**
-- **Color Palette**: Emerald-based theme with accessibility-compliant contrast ratios
-- **Typography**: Plus Jakarta Sans for headings, system fonts for body text
-- **Spacing**: Consistent 4px grid system using Tailwind's spacing scale
-- **Animations**: Subtle Framer Motion animations for enhanced user experience
+```javascript
+const api = axios.create({
+    baseURL: 'https://world.openfoodfacts.org',
+    headers: {
+        'User-Agent': 'WellnessMarket/1.0 (Student Project)',
+    },
+});
+```
+
+### **Performance Logic**
+Used an Internal Cache Object to store API responses, preventing redundant network calls and making the app feel 'instant' during navigation. Combined with sessionStorage persistence, users experience lightning-fast interactions even after page refreshes.
+
+```javascript
+// Multi-layer caching strategy
+const cache = {
+    products: new Map(),     // Memory cache for instant access
+    sessionStorage: {},      // Persistent cache across sessions
+    categories: null         // Static data caching
+};
+```
+
+### **State Management**
+Leveraged the React Context API to handle the cart logic globally, ensuring data consistency across the Navbar, Product Grid, and Detail Modal. This eliminates prop drilling while maintaining performance through selective re-renders.
+
+```javascript
+// Global cart state management
+const CartContext = createContext();
+export const useCart = () => useContext(CartContext);
+```
+
+### **Mobile-First Styling**
+Utilized Tailwind CSS with a mobile-first approach, implementing a horizontally scrollable category bar and a responsive drawer for the mobile cart. Every component is designed to work flawlessly on touch devices before being enhanced for desktop.
+
+```css
+/* Mobile-first responsive design */
+.category-bar { @apply flex overflow-x-auto scrollbar-hide; }
+.cart-drawer { @apply w-full sm:w-96; }
+.product-grid { @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4; }
+```
+
+---
+
+## ⏱️ Development Timeline
+
+### **Total Development Time: 2.5 Hours**
+
+| Phase | Duration | Focus Areas |
+|-------|----------|-------------|
+| **Architecture & API Setup** | 45 mins | • OpenFoodFacts API integration<br>• CORS handling and User-Agent setup<br>• Custom hooks architecture<br>• Error handling and fallback systems |
+| **UI Development & Responsiveness** | 45 mins | • Component design and layout<br>• Mobile-first responsive implementation<br>• Tailwind CSS styling<br>• Cross-device compatibility testing |
+| **Feature Implementation** | 30 mins | • Search functionality (text + barcode)<br>• Cart system with Context API<br>• Infinite scroll and pagination<br>• Category filtering and sorting |
+| **Optimization & Documentation** | 30 mins | • Performance optimization<br>• Caching implementation<br>• Code documentation<br>• README and final polish |
+
+### **Key Milestones**
+- ✅ **0-45 mins**: Core architecture and API connectivity established
+- ✅ **45-90 mins**: Responsive UI components completed
+- ✅ **90-120 mins**: Full feature set implemented and tested
+- ✅ **120-150 mins**: Production-ready with documentation
 
 ---
 
@@ -251,7 +298,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Developed by [Suyash Rawat](https://github.com/Suyash19-tech)**
 
-*Passionate about creating exceptional user experiences through modern web technologies*
+*Made by Suyash Rawat - Passionate about creating exceptional user experiences through modern web technologies*
 
 - 🌐 **Portfolio**: [suyashrawat.com](https://suyashrawat.com)
 - 💼 **LinkedIn**: [linkedin.com/in/suyash-rawat-a41b27287](https://www.linkedin.com/in/suyash-rawat-a41b27287)

@@ -62,7 +62,12 @@ export const useFood = () => {
             // Apply client-side sorting
             let sortedProducts = sortProducts(data.products, sortBy);
 
-            setProducts(sortedProducts);
+            if (append) {
+                setProducts(prev => [...prev, ...sortedProducts]);
+            } else {
+                setProducts(sortedProducts);
+            }
+
             setPage(pageNum);
             setTotalPages(data.totalPages);
             setTotalCount(data.count);
@@ -125,16 +130,16 @@ export const useFood = () => {
     }, []);
 
     /**
-     * Load more products (traditional pagination)
+     * Load more products (infinite scroll / load more)
      */
-    const loadMore = useCallback((newPage) => {
-        if (!loading && !isBarcodeResult) {
-            loadProducts(newPage, false);
+    const loadMore = useCallback(() => {
+        if (!loading && hasMore && !isBarcodeResult) {
+            loadProducts(page + 1, true);
         }
-    }, [loading, loadProducts, isBarcodeResult]);
+    }, [loading, hasMore, page, loadProducts, isBarcodeResult]);
 
     /**
-     * Go to specific page
+     * Go to specific page (for traditional pagination if needed)
      */
     const goToPage = useCallback((pageNum) => {
         if (!loading && pageNum !== page && !isBarcodeResult) {

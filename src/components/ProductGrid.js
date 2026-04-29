@@ -1,12 +1,35 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductCard from './ProductCard';
-import Pagination from './Pagination';
 
 /**
- * ProductGrid Component - With Traditional Pagination
+ * ProductGrid Component - With Infinite Scroll & Load More Button
  */
-const ProductGrid = ({ products, loading, totalPages, currentPage, onPageChange, onProductClick }) => {
+const ProductGrid = ({ products, loading, hasMore, onLoadMore, onProductClick }) => {
+    const observerTarget = useRef(null);
+
+    // Infinite scroll observer
+    useEffect(() => {
+        const currentTarget = observerTarget.current;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore && !loading) {
+                    onLoadMore();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (currentTarget) {
+            observer.observe(currentTarget);
+        }
+
+        return () => {
+            if (currentTarget) {
+                observer.unobserve(currentTarget);
+            }
+        };
+    }, [hasMore, loading, onLoadMore]);
     // Empty state
     if (products.length === 0 && !loading) {
         return (
@@ -112,14 +135,36 @@ const ProductGrid = ({ products, loading, totalPages, currentPage, onPageChange,
                 </div>
             )}
 
-            {/* Traditional Pagination */}
-            {!loading && products.length > 0 && totalPages > 1 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={onPageChange}
-                    loading={loading}
-                />
+            {/* Load More Button - Visible Alternative to Infinite Scroll */}
+            {!loading && hasMore && products.length > 0 && (
+                <div className="flex justify-center mt-8 mb-4">
+                    <motion.button
+                        onClick={onLoadMore}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-8 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-full font-semibold text-sm hover:shadow-[0_8px_24px_rgba(16,185,129,0.3)] transition-all duration-300"
+                        style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                        Load More Products
+                    </motion.button>
+                </div>
+            )}
+
+            {/* Infinite Scroll Trigger - Hidden but functional */}
+            <div ref={observerTarget} className="h-4 mt-4"></div>
+
+            {/* End Message */}
+            {!hasMore && products.length > 1 && !loading && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center py-8 text-gray-400 text-sm font-medium"
+                >
+                    <svg className="w-6 h-6 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    You've seen all products
+                </motion.div>
             )}
         </div>
     );

@@ -19,8 +19,7 @@ function App() {
     categories,
     loading,
     error,
-    page,
-    totalPages,
+    hasMore,
     totalCount,
     searchQuery,
     selectedCategory,
@@ -29,7 +28,7 @@ function App() {
     searchByBarcode,
     handleCategoryChange,
     handleSortChange,
-    goToPage,
+    loadMore,
     resetFilters,
   } = useFood();
 
@@ -218,9 +217,14 @@ function App() {
         {!loading && products.length > 0 && (
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-gray-500 font-medium">
-              {totalCount ? `${totalCount} total products` : `${products.length} products found`}
-              {totalPages > 1 && ` • Page ${page} of ${totalPages}`}
+              {products.length} {products.length === 1 ? 'product' : 'products'} loaded
+              {totalCount && totalCount > products.length && ` • ${totalCount} total available`}
             </p>
+            {hasMore && (
+              <p className="text-xs text-gray-400">
+                Scroll down or click "Load More" for more products
+              </p>
+            )}
           </div>
         )}
 
@@ -228,9 +232,8 @@ function App() {
         <ProductGrid
           products={products}
           loading={loading}
-          totalPages={totalPages}
-          currentPage={page}
-          onPageChange={goToPage}
+          hasMore={hasMore}
+          onLoadMore={loadMore}
           onProductClick={handleProductClick}
         />
       </main>

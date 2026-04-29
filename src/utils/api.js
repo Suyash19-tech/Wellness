@@ -2,8 +2,6 @@ import axios from 'axios';
 import { mockProducts, mockCategories } from './mockData';
 
 const BASE_URL = 'https://world.openfoodfacts.org';
-const CORS_PROXY = 'https://cors-anywhere.herokuapp.com/';
-const USE_PROXY = false; // Set to true if direct fetch fails
 
 // Proper User-Agent as required by OpenFoodFacts
 const USER_AGENT = 'WellnessMarket/1.0 (Student Project)';
@@ -18,14 +16,12 @@ const cache = {
 // Abort controller for cancelling requests
 let abortController = null;
 
-// Create axios instance with SIMPLE headers (avoid preflight)
-// Only use User-Agent - no Content-Type to keep it a "simple request"
+// Create axios instance with proper headers
 const api = axios.create({
-    baseURL: USE_PROXY ? CORS_PROXY + BASE_URL : BASE_URL,
-    timeout: 20000,
+    baseURL: BASE_URL,
+    timeout: 15000,
     headers: {
         'User-Agent': USER_AGENT,
-        // NO Content-Type or Accept headers - they trigger preflight checks
     },
 });
 
@@ -79,33 +75,7 @@ export const isBarcode = (input) => {
 };
 
 /**
- * Resilient fetch with retry logic
- */
-const resilientFetch = async (url, params, retries = 2) => {
-    for (let i = 0; i <= retries; i++) {
-        try {
-            const response = await api.get(url, {
-                params,
-                signal: abortController?.signal
-            });
-            return response;
-        } catch (error) {
-            if (error.name === 'CanceledError') {
-                throw error; // Don't retry cancelled requests
-            }
-
-            if (i === retries) {
-                throw error; // Last retry failed
-            }
-
-            console.log(`⚠️ Retry ${i + 1}/${retries} for ${url}`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
-        }
-    }
-};
-
-/**
- * Fetch products with caching and resilient fetch
+ * Fetch products with enhanced error handling and fallback
  */
 export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', category = '') => {
     // Check sessionStorage cache first
@@ -158,8 +128,13 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
             params.tag_0 = category;
         }
 
-        console.log('🌐 Fetching products from API...');
-        const response = await resilientFetch('/cgi/search.pl', params);
+        console.log('🌐 Fetching products from OpenFoodFacts API...');
+
+        // Try direct API call first
+        const response = await api.get('/cgi/search.pl', {
+            params,
+            signal: abortController?.signal
+        });
 
         const result = {
             products: response.data.products || [],
@@ -168,6 +143,12 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
             pageSize: response.data.page_size || pageSize,
             totalPages: Math.ceil((response.data.count || 0) / pageSize),
         };
+
+        // Add mock price data to real products for demo purposes
+        result.products = result.products.map(product => ({
+            ...product,
+            price: Math.random() * 20 + 1, // Random price between $1-$21
+        }));
 
         // Cache the result
         cache.products.set(cacheKey, result);
@@ -184,7 +165,7 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
         console.error('❌ OpenFoodFacts API error:', error.message);
         console.log('🔄 Using mock data as fallback...');
 
-        // Fallback to mock data
+        // Enhanced fallback to mock data with pagination simulation
         let filteredProducts = [...mockProducts];
 
         if (searchTerm) {
@@ -194,12 +175,29 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
             );
         }
 
+        if (category) {
+            filteredProducts = filteredProducts.filter(p =>
+                p.categories.toLowerCase().includes(category.toLowerCase())
+            );
+        }
+
+        // Simulate pagination with mock data
+        const startIndex = (page - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+        // Add mock price data
+        const productsWithPrices = paginatedProducts.map(product => ({
+            ...product,
+            price: Math.random() * 20 + 1,
+        }));
+
         const result = {
-            products: filteredProducts,
+            products: productsWithPrices,
             count: filteredProducts.length,
-            page: 1,
-            pageSize: filteredProducts.length,
-            totalPages: 1,
+            page: page,
+            pageSize: pageSize,
+            totalPages: Math.ceil(filteredProducts.length / pageSize),
         };
 
         // Cache mock data too
@@ -211,7 +209,7 @@ export const fetchProducts = async (page = 1, pageSize = 20, searchTerm = '', ca
 };
 
 /**
- * Fetch product by barcode with caching
+ * Fetch product by barcode with enhanced error handling
  */
 export const fetchProductByBarcode = async (barcode) => {
     // Check sessionStorage cache first
@@ -229,12 +227,17 @@ export const fetchProductByBarcode = async (barcode) => {
 
     try {
         console.log('🌐 Fetching product by barcode:', barcode);
-        const response = await resilientFetch(`/api/v0/product/${barcode}.json`, {
-            fields: 'code,product_name,brands,image_url,image_front_url,image_front_small_url,nutrition_grades,quantity,categories,nutriments,ingredients_text,labels,countries',
+        const response = await api.get(`/api/v0/product/${barcode}.json`, {
+            params: {
+                fields: 'code,product_name,brands,image_url,image_front_url,image_front_small_url,nutrition_grades,quantity,categories,nutriments,ingredients_text,labels,countries',
+            }
         });
 
         if (response.data.status === 1) {
-            const product = response.data.product;
+            const product = {
+                ...response.data.product,
+                price: Math.random() * 20 + 1, // Add mock price
+            };
 
             // Cache the result
             cache.barcodes.set(barcode, product);
@@ -251,15 +254,19 @@ export const fetchProductByBarcode = async (barcode) => {
         // Fallback to mock data
         const product = mockProducts.find(p => p.code === barcode);
         if (product) {
+            const productWithPrice = {
+                ...product,
+                price: Math.random() * 20 + 1,
+            };
             console.log('🔄 Using mock product');
-            return product;
+            return productWithPrice;
         }
         throw new Error('Product not found with this barcode');
     }
 };
 
 /**
- * Fetch available categories with caching
+ * Fetch available categories with enhanced error handling
  */
 export const fetchCategories = async () => {
     // Check sessionStorage cache first
@@ -276,7 +283,9 @@ export const fetchCategories = async () => {
 
     try {
         console.log('🌐 Fetching categories from API...');
-        const response = await resilientFetch('/categories.json', { json: 1 });
+        const response = await api.get('/categories.json', {
+            params: { json: 1 }
+        });
 
         // Get top 10 categories sorted by product count
         const categories = response.data.tags || [];
